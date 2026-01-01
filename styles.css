@@ -490,30 +490,31 @@ header p {
   gap: var(--space-2);
 }
 
-/* Compact story as a collapsible tooltip-style element */
+/* Story element - the narrative focus of the gameplay experience */
 .hole-story {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(30, 41, 59, 0.9));
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(30, 41, 59, 0.92));
   backdrop-filter: blur(10px);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
-  margin-bottom: var(--space-2);
-  border-left: 3px solid var(--primary-400);
-  box-shadow: var(--shadow-sm);
-  max-height: 3.5rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  border-left: 4px solid var(--primary-400);
+  box-shadow: var(--shadow-md);
+  max-height: 4.5rem;
   overflow: hidden;
   position: relative;
   cursor: pointer;
   transition: all var(--transition-base);
+  font-style: italic;
 }
 
 .hole-story:hover,
 .hole-story:focus,
 .hole-story.expanded {
-  max-height: 12rem;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(30, 41, 59, 0.95));
+  max-height: 16rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(30, 41, 59, 0.98));
 }
 
 .hole-story::after {
@@ -672,17 +673,17 @@ header p {
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
 }
 
-/* Score description badges - Compact inline style */
+/* Score description badges - Prominent display */
 .score-description {
-  margin-top: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.65rem;
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
   border-radius: var(--radius-sm);
   animation: popIn var(--transition-bounce);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .score-description.hole-in-one {
@@ -723,26 +724,26 @@ header p {
   border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
-/* Player total display - Compact inline */
+/* Player total display - Prominent scores */
 .player-total {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--space-1);
-  padding-top: var(--space-1);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 0.7rem;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.85rem;
 }
 
 .player-total span:first-child {
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .player-total .par-info {
   color: var(--accent-400);
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: 800;
+  font-size: 0.9rem;
 }
 
 /* Hide original nav buttons (mobile bar replaces them) */
@@ -1168,8 +1169,9 @@ header p {
   }
 
   .hole-story {
-    font-size: 0.75rem;
-    padding: var(--space-2);
+    font-size: 0.9rem;
+    padding: var(--space-2) var(--space-3);
+    max-height: 4rem;
   }
 
   .hole-header h2 {
@@ -1240,8 +1242,9 @@ header p {
   }
 
   .hole-story {
-    font-size: 0.9rem;
-    max-height: 4rem;
+    font-size: 1.1rem;
+    max-height: 5rem;
+    padding: var(--space-4);
   }
 
   .leaderboard {
