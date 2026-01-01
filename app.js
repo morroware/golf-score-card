@@ -238,6 +238,9 @@ function startGame() {
   if (playerSetup) playerSetup.classList.add('hidden');
   if (holePlay) holePlay.classList.add('active');
 
+  // Push initial game state to history for back button support
+  history.pushState({ hole: 0, game: true }, '', '#hole1');
+
   renderHole();
   updateMobileButtons();
   saveState();
@@ -391,6 +394,8 @@ function nextHole() {
 
   if (currentHole < HOLES_COUNT - 1) {
     currentHole++;
+    // Push new hole to history for back button support
+    history.pushState({ hole: currentHole, game: true }, '', `#hole${currentHole + 1}`);
     renderHole();
     saveState();
   } else {
@@ -410,6 +415,9 @@ function endGame() {
   if (summarySection) summarySection.classList.add('active');
   if (mobileButtonBar) mobileButtonBar.classList.remove('active');
   if (container) container.classList.remove('gameplay');
+
+  // Clear URL hash when game ends
+  history.replaceState({}, '', window.location.pathname);
 
   buildLeaderboard();
 
@@ -586,6 +594,9 @@ function goBackToSetup() {
       </div>
     `).join('');
   }
+
+  // Clear URL hash
+  history.replaceState({}, '', window.location.pathname);
 
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -819,6 +830,8 @@ function loadState() {
     if (holePlayEl) holePlayEl.classList.add('active');
 
     currentHole = hole;
+    // Restore history state for back button support
+    history.replaceState({ hole: currentHole, game: true }, '', `#hole${currentHole + 1}`);
     renderHole();
     updateMobileButtons();
 
@@ -906,12 +919,29 @@ function showToast(message) {
 ////////////////////////////////////////////////////////////////////////////////
 // Event Listeners
 ////////////////////////////////////////////////////////////////////////////////
-window.addEventListener('popstate', () => {
-  const modal = document.getElementById('scorecardModal');
-  if (modal.classList.contains('active')) {
+window.addEventListener('popstate', (e) => {
+  // First check if modal is open and close it
+  const modal = $('scorecardModal');
+  if (modal && modal.classList.contains('active')) {
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    return;
+  }
+
+  // Handle gameplay navigation (browser back = previous hole)
+  if (gameStarted) {
+    if (currentHole === 0) {
+      // On first hole, go back to setup
+      goBackToSetup();
+    } else {
+      // Go to previous hole
+      currentHole--;
+      renderHole();
+      saveState();
+      // Push new state so back button continues to work
+      history.pushState({ hole: currentHole }, '', `#hole${currentHole + 1}`);
+    }
   }
 });
 
