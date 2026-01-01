@@ -1,179 +1,121 @@
-<!-- index.html - Royal Mini Golf Quest v1.1 -->
-<!-- Designed and implemented by Seth Morrow for The Castle Fun Center -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Castle Fun Center – Royal Mini Golf Quest</title>
-  
-  <!-- Medieval & Royal Fonts -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Royal Mini Golf Quest | Castle Fun Center</title>
+
+  <!-- Preconnect for performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-  
-  <!-- Enhanced styles with mobile-first button design -->
+
+  <!-- Fonts: Cinzel for headings -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
-  
-  <!-- SEO and Social Meta Tags -->
-  <meta name="description" content="Royal Mini Golf Quest at Castle Fun Center in Chester, NY. Medieval-themed mini golf with enhanced scoring, achievements, and par tracking.">
-  <meta name="keywords" content="mini golf, Castle Fun Center, Chester NY, medieval theme, golf scoring, family entertainment">
-  
-  <!-- Open Graph for Social Sharing -->
-  <meta property="og:title" content="Royal Mini Golf Quest - Castle Fun Center">
-  <meta property="og:description" content="Embark on a medieval mini golf adventure with enhanced scoring and achievements!">
-  <meta property="og:type" content="website">
-  
-  <!-- Accessibility enhancements -->
-  <meta name="theme-color" content="#6B46C1">
-  
-  <!-- Mobile app capabilities -->
-  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- PWA & Mobile Meta -->
+  <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mini Golf">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- SEO -->
+  <meta name="description" content="Track your mini golf scores with Royal Mini Golf Quest at Castle Fun Center, Chester NY. Medieval-themed scoring with achievements and leaderboards.">
+  <meta name="keywords" content="mini golf, scorecard, Castle Fun Center, Chester NY, golf scoring app">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Royal Mini Golf Quest">
+  <meta property="og:description" content="Medieval-themed mini golf scoring at Castle Fun Center">
+  <meta property="og:type" content="website">
 </head>
 <body>
   <main class="container">
-    <!-- Castle Header with Enhanced Branding -->
+    <!-- Header -->
     <header>
-      <div class="castle-icon" role="img" aria-label="Castle">🏰</div>
+      <span class="castle-icon" role="img" aria-label="Castle">🏰</span>
       <h1>Royal Mini Golf Quest</h1>
       <p>Castle Fun Center – Chester, NY</p>
     </header>
 
-    <!-- Enhanced Course Selector with Better Visual Feedback -->
-    <section class="courses" role="group" aria-label="Choose your quest course">
+    <!-- Course Selection -->
+    <section class="courses" role="group" aria-label="Select your quest">
       <button class="btn active" data-course="dragon" aria-pressed="true">
-        🐉 Dragon Slayer ✓
+        🐉 Dragon Slayer
       </button>
       <button class="btn" data-course="knight" aria-pressed="false">
-        ⚔️ Knight’s Challenge
+        ⚔️ Knight's Challenge
       </button>
     </section>
 
-    <!-- Player Setup Section -->
+    <!-- Player Setup -->
     <section id="playerSetup" class="players">
       <div id="playerInputs">
-        <!-- Initial player inputs (JavaScript will manage these) -->
         <div class="player-input">
-          <input type="text"
-                 placeholder="Knight 1 Name"
-                 aria-label="Name of Knight 1"
-                 maxlength="20">
-          <button type="button"
-                  onclick="removePlayer(this)"
-                  aria-label="Remove Knight 1">–</button>
+          <input type="text" placeholder="Player 1 name" aria-label="Name of Player 1" maxlength="20" autocomplete="off" autocapitalize="words">
+          <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
         </div>
         <div class="player-input">
-          <input type="text"
-                 placeholder="Knight 2 Name"
-                 aria-label="Name of Knight 2"
-                 maxlength="20">
-          <button type="button"
-                  onclick="removePlayer(this)"
-                  aria-label="Remove Knight 2">–</button>
+          <input type="text" placeholder="Player 2 name" aria-label="Name of Player 2" maxlength="20" autocomplete="off" autocapitalize="words">
+          <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
         </div>
       </div>
-      
-      <!-- Player management buttons -->
-      <button class="btn" type="button" onclick="addPlayer()">➕ Add Knight</button>
-      <button class="btn" type="button" onclick="startGame()">⚔️ Begin Quest</button>
+
+      <button class="btn secondary" type="button" onclick="addPlayer()">
+        + Add Player
+      </button>
+      <button class="btn primary" type="button" onclick="startGame()">
+        Start Quest
+      </button>
     </section>
 
-    <!-- Enhanced Hole-by-Hole Play Section -->
+    <!-- Gameplay Section -->
     <section id="holePlay" class="hole-play">
-      <!-- Hole header with story and progress -->
       <div class="hole-header">
         <h2 id="holeNumber">Hole 1</h2>
-        <div class="hole-story" id="holeStory">A new legend unfolds…</div>
-        <div class="hole-progress" id="holeProgress">Dragon Slayer Hole 1 (Par 2)</div>
-        
-        <!-- Visual progress bar -->
-        <div class="progress-bar"
-             role="progressbar"
-             aria-valuemin="0"
-             aria-valuemax="18"
-             aria-valuenow="1">
+        <div class="hole-story" id="holeStory">Your adventure begins...</div>
+        <div class="hole-progress" id="holeProgress">Dragon Slayer – Hole 1 (Par 2)</div>
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="18" aria-valuenow="1">
           <div id="progressFill" class="progress-fill"></div>
         </div>
       </div>
 
-      <!-- Dynamic player grid (populated by JavaScript) -->
       <div id="playersGrid" class="players-grid"></div>
-      
-      <!-- Enhanced action buttons -->
-      <button id="prevBtn"
-              class="btn secondary"
-              onclick="previousHole()"
-              aria-label="Go to previous hole">
-        ⬅️ Previous
-      </button>
-      <button id="nextBtn"
-              class="btn primary"
-              onclick="nextHole()"
-              aria-label="Proceed to next hole">
-        ➡️ Next Hole
-      </button>
+
+      <!-- Desktop buttons (hidden on mobile) -->
+      <button id="prevBtn" class="btn secondary" onclick="previousHole()">← Previous</button>
+      <button id="nextBtn" class="btn primary" onclick="nextHole()">Next Hole →</button>
     </section>
 
-    <!-- Enhanced Summary & Leaderboard Section -->
+    <!-- Summary Section -->
     <section id="summarySection" class="summary">
-      <!-- Winner announcement with enhanced styling -->
       <div id="winnerAnnouncement" class="winner"></div>
-      
-      <!-- Enhanced leaderboard with achievements -->
       <div id="leaderboardContent" class="leaderboard"></div>
-      
-      <!-- New game button -->
-      <button class="btn"
-              type="button"
-              onclick="newGame()"
-              aria-label="Start a new quest">
-        🆕 New Quest
+      <button class="btn primary" type="button" onclick="newGame()">
+        🎯 New Quest
       </button>
     </section>
   </main>
 
-  <!-- ENHANCED MOBILE BUTTON BAR -->
-  <div id="mobileButtonBar" class="mobile-button-bar">
+  <!-- Mobile Navigation Bar -->
+  <nav id="mobileButtonBar" class="mobile-button-bar" aria-label="Game navigation">
     <div id="buttonGrid" class="button-grid"></div>
-  </div>
+  </nav>
 
-  <!-- Enhanced Scorecard Modal -->
-  <div id="scorecardModal"
-       class="modal"
-       onclick="hideScorecards()"
-       role="dialog"
-       aria-labelledby="scorecardModalTitle"
-       aria-hidden="true">
+  <!-- Scorecard Modal -->
+  <div id="scorecardModal" class="modal" onclick="hideScorecards()" role="dialog" aria-labelledby="scorecardModalTitle" aria-hidden="true">
     <div class="modal-content" onclick="event.stopPropagation()">
-      <!-- Modal header -->
       <div class="modal-header">
-        <h2 id="scorecardModalTitle">📊 Quest Scorecards</h2>
-        <button class="modal-close"
-                onclick="hideScorecards()"
-                aria-label="Close scorecards modal"
-                type="button">&times;</button>
+        <h2 id="scorecardModalTitle">📊 Scorecards</h2>
+        <button class="modal-close" onclick="hideScorecards()" aria-label="Close" type="button">×</button>
       </div>
-      
-      <!-- Modal content area -->
       <div id="scorecardModalContent" class="modal-scorecards"></div>
     </div>
   </div>
 
-  <!-- Enhanced JavaScript Application -->
+  <!-- Application Script -->
   <script src="app.js"></script>
-  
-  <!-- Optional: Service Worker for Offline Support -->
-  <script>
-    // Register service worker for offline functionality (optional)
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => console.log('SW registered: ', registration))
-          .catch(error => console.log('SW registration failed: ', error));
-      });
-    }
-  </script>
 </body>
 </html>
