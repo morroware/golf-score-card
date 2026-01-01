@@ -96,12 +96,17 @@ function getScoreDescription(strokes, par) {
 }
 
 function getParDifferential(player) {
+  // Validate inputs
+  if (!player || !player.scores) return 'E';
+  if (!isValidCourse(currentCourse)) return 'E';
+
   let parTotal = 0;
   let holesPlayed = 0;
+  const pars = coursePars[currentCourse];
 
-  for (let i = 0; i <= currentHole; i++) {
+  for (let i = 0; i <= currentHole && i < pars.length; i++) {
     if (player.scores[i] !== null) {
-      parTotal += coursePars[currentCourse][i];
+      parTotal += pars[i];
       holesPlayed++;
     }
   }
@@ -203,8 +208,13 @@ function updatePlayerPlaceholders() {
 function startGame() {
   const inputs = document.querySelectorAll('#playerInputs input');
 
+  if (!inputs || inputs.length === 0) {
+    showToast('Add at least one player');
+    return;
+  }
+
   players = Array.from(inputs).map((input, i) => ({
-    name: input.value.trim() || `Player ${i + 1}`,
+    name: (input.value.trim() || `Player ${i + 1}`).slice(0, 20),
     scores: Array(HOLES_COUNT).fill(null),
     total: 0
   }));
@@ -214,12 +224,19 @@ function startGame() {
     return;
   }
 
+  // Validate course before starting
+  if (!isValidCourse(currentCourse)) {
+    currentCourse = 'dragon';
+  }
+
   gameStarted = true;
   currentHole = 0;
 
   showCourseDisplay();
-  document.getElementById('playerSetup').classList.add('hidden');
-  document.getElementById('holePlay').classList.add('active');
+  const playerSetup = $('playerSetup');
+  const holePlay = $('holePlay');
+  if (playerSetup) playerSetup.classList.add('hidden');
+  if (holePlay) holePlay.classList.add('active');
 
   renderHole();
   updateMobileButtons();
@@ -227,29 +244,55 @@ function startGame() {
 }
 
 function renderHole() {
-  // Update hole number
-  document.getElementById('holeNumber').textContent = `Hole ${currentHole + 1}`;
+  // Validate course before rendering
+  if (!isValidCourse(currentCourse)) {
+    console.error(`Invalid course: ${currentCourse}`);
+    currentCourse = 'dragon'; // Fallback to default
+  }
+
+  // Validate hole number
+  if (currentHole < 0 || currentHole >= HOLES_COUNT) {
+    console.error(`Invalid hole number: ${currentHole}`);
+    currentHole = 0; // Fallback to first hole
+  }
+
+  // Update hole number (with null check)
+  const holeNumberEl = $('holeNumber');
+  if (holeNumberEl) {
+    holeNumberEl.textContent = `Hole ${currentHole + 1}`;
+  }
 
   // Update story
   const story = holeStories[currentCourse]?.[String(currentHole + 1)] || 'Your quest continues...';
-  const storyEl = document.getElementById('holeStory');
-  storyEl.textContent = story;
-  storyEl.classList.remove('expanded');
-
-  // Click to expand/collapse story
-  storyEl.onclick = () => storyEl.classList.toggle('expanded');
+  const storyEl = $('holeStory');
+  if (storyEl) {
+    storyEl.textContent = story;
+    storyEl.classList.remove('expanded');
+    // Click to expand/collapse story
+    storyEl.onclick = () => storyEl.classList.toggle('expanded');
+  }
 
   // Update progress info
   const par = coursePars[currentCourse][currentHole];
-  document.getElementById('holeProgress').textContent =
-    `${courseNames[currentCourse].replace(/[🐉⚔️]/g, '').trim()} – Hole ${currentHole + 1} (Par ${par})`;
+  const holeProgressEl = $('holeProgress');
+  if (holeProgressEl) {
+    holeProgressEl.textContent =
+      `${courseNames[currentCourse].replace(/[🐉⚔️]/g, '').trim()} – Hole ${currentHole + 1} (Par ${par})`;
+  }
 
   // Update progress bar
   const progress = ((currentHole + 1) / HOLES_COUNT) * 100;
-  document.getElementById('progressFill').style.width = `${progress}%`;
+  const progressFillEl = $('progressFill');
+  if (progressFillEl) {
+    progressFillEl.style.width = `${progress}%`;
+  }
 
   // Render player cards
-  const grid = document.getElementById('playersGrid');
+  const grid = $('playersGrid');
+  if (!grid) {
+    console.error('Players grid element not found');
+    return;
+  }
   grid.innerHTML = '';
 
   players.forEach((player, idx) => {
@@ -289,6 +332,20 @@ function renderHole() {
 function updateScore(playerIdx, value) {
   const strokes = parseInt(value, 10);
   if (isNaN(strokes)) return;
+
+  // Validate player index and score bounds
+  if (!isValidPlayerIndex(playerIdx)) {
+    console.error(`Invalid player index: ${playerIdx}`);
+    return;
+  }
+  if (!isValidScore(strokes)) {
+    console.error(`Invalid score value: ${strokes}`);
+    return;
+  }
+  if (!isValidCourse(currentCourse)) {
+    console.error(`Invalid course: ${currentCourse}`);
+    return;
+  }
 
   players[playerIdx].scores[currentHole] = strokes;
   players[playerIdx].total = players[playerIdx].scores
@@ -344,19 +401,45 @@ function nextHole() {
 function endGame() {
   gameStarted = false;
 
-  document.getElementById('holePlay').classList.remove('active');
-  document.getElementById('summarySection').classList.add('active');
-  document.getElementById('mobileButtonBar').classList.remove('active');
-  document.querySelector('.container').classList.remove('gameplay');
+  const holePlay = $('holePlay');
+  const summarySection = $('summarySection');
+  const mobileButtonBar = $('mobileButtonBar');
+  const container = $$('.container');
+
+  if (holePlay) holePlay.classList.remove('active');
+  if (summarySection) summarySection.classList.add('active');
+  if (mobileButtonBar) mobileButtonBar.classList.remove('active');
+  if (container) container.classList.remove('gameplay');
 
   buildLeaderboard();
-  localStorage.removeItem(STORAGE_KEY);
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to clear localStorage:', e);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Leaderboard
 ////////////////////////////////////////////////////////////////////////////////
 function buildLeaderboard() {
+  // Defensive check for empty players array
+  if (!players || players.length === 0) {
+    console.error('No players to display on leaderboard');
+    const container = $('leaderboardContent');
+    if (container) {
+      container.innerHTML = '<p>No players found.</p>';
+    }
+    return;
+  }
+
+  // Validate course data
+  if (!isValidCourse(currentCourse)) {
+    console.error(`Invalid course for leaderboard: ${currentCourse}`);
+    return;
+  }
+
   const sorted = [...players].sort((a, b) => a.total - b.total);
   const totalPar = coursePars[currentCourse].reduce((a, b) => a + b, 0);
   const winner = sorted[0];
@@ -436,9 +519,14 @@ function buildLeaderboard() {
 // Mobile Button Bar
 ////////////////////////////////////////////////////////////////////////////////
 function updateMobileButtons() {
-  const bar = document.getElementById('mobileButtonBar');
-  const grid = document.getElementById('buttonGrid');
-  const container = document.querySelector('.container');
+  const bar = $('mobileButtonBar');
+  const grid = $('buttonGrid');
+  const container = $$('.container');
+
+  if (!bar || !grid || !container) {
+    console.warn('Mobile button bar elements not found');
+    return;
+  }
 
   if (!gameStarted) {
     bar.classList.remove('active');
@@ -474,33 +562,59 @@ function updateMobileButtons() {
 function goBackToSetup() {
   gameStarted = false;
 
-  document.querySelector('.container').classList.remove('gameplay');
-  document.getElementById('mobileButtonBar').classList.remove('active');
-  document.getElementById('holePlay').classList.remove('active');
+  const container = $$('.container');
+  const bar = $('mobileButtonBar');
+  const holePlay = $('holePlay');
+  const playerSetup = $('playerSetup');
+  const inputsContainer = $('playerInputs');
+
+  if (container) container.classList.remove('gameplay');
+  if (bar) bar.classList.remove('active');
+  if (holePlay) holePlay.classList.remove('active');
 
   // Show setup with current players
   showCourseSelection();
-  document.getElementById('playerSetup').classList.remove('hidden');
+  if (playerSetup) playerSetup.classList.remove('hidden');
 
   // Restore player names in inputs
-  const inputsContainer = document.getElementById('playerInputs');
-  inputsContainer.innerHTML = players.map((p, i) => `
-    <div class="player-input">
-      <input type="text" placeholder="Player ${i + 1} name" aria-label="Name of Player ${i + 1}"
-             maxlength="20" autocomplete="off" autocapitalize="words" value="${escapeHtml(p.name)}">
-      <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
-    </div>
-  `).join('');
+  if (inputsContainer && players && players.length > 0) {
+    inputsContainer.innerHTML = players.map((p, i) => `
+      <div class="player-input">
+        <input type="text" placeholder="Player ${i + 1} name" aria-label="Name of Player ${i + 1}"
+               maxlength="20" autocomplete="off" autocapitalize="words" value="${escapeHtml(p.name)}">
+        <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
+      </div>
+    `).join('');
+  }
 
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to clear localStorage:', e);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Modal Functions
 ////////////////////////////////////////////////////////////////////////////////
 function showScorecards() {
-  const modal = document.getElementById('scorecardModal');
-  const content = document.getElementById('scorecardModalContent');
+  const modal = $('scorecardModal');
+  const content = $('scorecardModalContent');
+
+  if (!modal || !content) {
+    console.error('Scorecard modal elements not found');
+    return;
+  }
+
+  if (!players || players.length === 0) {
+    content.innerHTML = '<p>No player data available.</p>';
+    return;
+  }
+
+  if (!isValidCourse(currentCourse)) {
+    console.error('Invalid course for scorecards');
+    return;
+  }
 
   const sorted = [...players].sort((a, b) => a.total - b.total);
 
@@ -558,9 +672,11 @@ function showScorecards() {
 }
 
 function hideScorecards() {
-  const modal = document.getElementById('scorecardModal');
-  modal.classList.remove('active');
-  modal.setAttribute('aria-hidden', 'true');
+  const modal = $('scorecardModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  }
   document.body.style.overflow = '';
 
   if (window.location.hash === '#scorecards') {
@@ -588,24 +704,33 @@ function resetGame() {
   players = [];
   gameStarted = false;
 
-  document.querySelector('.container').classList.remove('gameplay');
-  document.getElementById('mobileButtonBar').classList.remove('active');
+  const container = $$('.container');
+  const mobileButtonBar = $('mobileButtonBar');
+  const playerSetup = $('playerSetup');
+  const holePlay = $('holePlay');
+  const summarySection = $('summarySection');
+  const playerInputs = $('playerInputs');
+
+  if (container) container.classList.remove('gameplay');
+  if (mobileButtonBar) mobileButtonBar.classList.remove('active');
 
   showCourseSelection();
-  document.getElementById('playerSetup').classList.remove('hidden');
-  document.getElementById('holePlay').classList.remove('active');
-  document.getElementById('summarySection').classList.remove('active');
+  if (playerSetup) playerSetup.classList.remove('hidden');
+  if (holePlay) holePlay.classList.remove('active');
+  if (summarySection) summarySection.classList.remove('active');
 
-  document.getElementById('playerInputs').innerHTML = `
-    <div class="player-input">
-      <input type="text" placeholder="Player 1 name" aria-label="Name of Player 1" maxlength="20" autocomplete="off" autocapitalize="words">
-      <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
-    </div>
-    <div class="player-input">
-      <input type="text" placeholder="Player 2 name" aria-label="Name of Player 2" maxlength="20" autocomplete="off" autocapitalize="words">
-      <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
-    </div>
-  `;
+  if (playerInputs) {
+    playerInputs.innerHTML = `
+      <div class="player-input">
+        <input type="text" placeholder="Player 1 name" aria-label="Name of Player 1" maxlength="20" autocomplete="off" autocapitalize="words">
+        <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
+      </div>
+      <div class="player-input">
+        <input type="text" placeholder="Player 2 name" aria-label="Name of Player 2" maxlength="20" autocomplete="off" autocapitalize="words">
+        <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
+      </div>
+    `;
+  }
 }
 
 function newGame() {
@@ -617,21 +742,53 @@ function newGame() {
 // State Persistence
 ////////////////////////////////////////////////////////////////////////////////
 function saveState() {
-  const state = {
-    course: currentCourse,
-    hole: currentHole,
-    players: players.map(p => ({ name: p.name, scores: p.scores })),
-    gameStarted
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    const state = {
+      course: currentCourse,
+      hole: currentHole,
+      players: players.map(p => ({ name: p.name, scores: p.scores })),
+      gameStarted
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save game state:', e);
+    // Don't show alert for every save failure, just log it
+  }
 }
 
 function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY);
+  let raw;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch (e) {
+    console.error('Failed to access localStorage:', e);
+    return false;
+  }
+
   if (!raw) return false;
 
   try {
-    const { course, hole, players: ps, gameStarted: gs } = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const { course, hole, players: ps, gameStarted: gs } = parsed;
+
+    // Validate loaded data
+    if (!isValidCourse(course)) {
+      console.warn('Invalid course in saved state, using default');
+      localStorage.removeItem(STORAGE_KEY);
+      return false;
+    }
+
+    if (!Array.isArray(ps) || ps.length === 0) {
+      console.warn('Invalid players data in saved state');
+      localStorage.removeItem(STORAGE_KEY);
+      return false;
+    }
+
+    if (typeof hole !== 'number' || hole < 0 || hole >= HOLES_COUNT) {
+      console.warn('Invalid hole number in saved state');
+      localStorage.removeItem(STORAGE_KEY);
+      return false;
+    }
 
     currentCourse = course;
     gameStarted = gs;
@@ -642,21 +799,38 @@ function loadState() {
       showCourseSelection();
     }
 
+    // Safely map players with validation
     players = ps.map(p => ({
-      name: p.name,
-      scores: p.scores,
-      total: p.scores.filter(s => s !== null).reduce((a, b) => a + b, 0)
+      name: (p && p.name) ? String(p.name).slice(0, 20) : 'Player',
+      scores: (p && Array.isArray(p.scores) && p.scores.length === HOLES_COUNT)
+        ? p.scores.map(s => (s !== null && isValidScore(s)) ? s : null)
+        : Array(HOLES_COUNT).fill(null),
+      total: 0 // Will be recalculated
     }));
 
-    document.getElementById('playerSetup').classList.add('hidden');
-    document.getElementById('holePlay').classList.add('active');
+    // Recalculate totals
+    players.forEach(p => {
+      p.total = p.scores.filter(s => s !== null).reduce((a, b) => a + b, 0);
+    });
+
+    const playerSetupEl = $('playerSetup');
+    const holePlayEl = $('holePlay');
+    if (playerSetupEl) playerSetupEl.classList.add('hidden');
+    if (holePlayEl) holePlayEl.classList.add('active');
+
     currentHole = hole;
     renderHole();
     updateMobileButtons();
 
     return true;
   } catch (e) {
-    console.error('Failed to load saved state:', e);
+    console.error('Failed to load saved state (corrupted data?):', e);
+    // Clean up corrupted data
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (removeErr) {
+      console.error('Failed to remove corrupted state:', removeErr);
+    }
     return false;
   }
 }
@@ -664,6 +838,60 @@ function loadState() {
 ////////////////////////////////////////////////////////////////////////////////
 // Utilities
 ////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Safely get a DOM element by ID with null check
+ * @param {string} id - The element ID
+ * @returns {HTMLElement|null} The element or null if not found
+ */
+function $(id) {
+  const el = document.getElementById(id);
+  if (!el) {
+    console.warn(`Element not found: #${id}`);
+  }
+  return el;
+}
+
+/**
+ * Safely get a DOM element by selector with null check
+ * @param {string} selector - The CSS selector
+ * @returns {HTMLElement|null} The element or null if not found
+ */
+function $$(selector) {
+  const el = document.querySelector(selector);
+  if (!el) {
+    console.warn(`Element not found: ${selector}`);
+  }
+  return el;
+}
+
+/**
+ * Validate that a course key exists in course data
+ * @param {string} course - The course key to validate
+ * @returns {boolean} True if valid
+ */
+function isValidCourse(course) {
+  return course && courseNames.hasOwnProperty(course) && coursePars.hasOwnProperty(course);
+}
+
+/**
+ * Validate score is within acceptable bounds
+ * @param {number} strokes - The score to validate
+ * @returns {boolean} True if valid (1-11)
+ */
+function isValidScore(strokes) {
+  return Number.isInteger(strokes) && strokes >= 1 && strokes <= 11;
+}
+
+/**
+ * Validate player index is within bounds
+ * @param {number} idx - The player index to validate
+ * @returns {boolean} True if valid
+ */
+function isValidPlayerIndex(idx) {
+  return Number.isInteger(idx) && idx >= 0 && idx < players.length;
+}
+
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
