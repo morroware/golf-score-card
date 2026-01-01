@@ -379,9 +379,8 @@ function celebrateScore(type) {
 ////////////////////////////////////////////////////////////////////////////////
 function previousHole() {
   if (currentHole > 0) {
-    currentHole--;
-    renderHole();
-    saveState();
+    // Use browser history to go back, ensuring consistency with browser back button
+    history.back();
   }
 }
 
