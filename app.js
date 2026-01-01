@@ -232,7 +232,12 @@ function renderHole() {
 
   // Update story
   const story = holeStories[currentCourse]?.[String(currentHole + 1)] || 'Your quest continues...';
-  document.getElementById('holeStory').textContent = story;
+  const storyEl = document.getElementById('holeStory');
+  storyEl.textContent = story;
+  storyEl.classList.remove('expanded');
+
+  // Click to expand/collapse story
+  storyEl.onclick = () => storyEl.classList.toggle('expanded');
 
   // Update progress info
   const par = coursePars[currentCourse][currentHole];
