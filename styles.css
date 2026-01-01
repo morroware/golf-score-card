@@ -1,0 +1,848 @@
+/* styles.css - Royal Mini Golf Quest v1.1 */
+/* Designed and implemented by Seth Morrow for The Castle Fun Center */
+/* Enhanced with mobile-first design and compact gameplay layout */
+
+/* === Color & Font Variables === */
+:root {
+  --royal-purple: #6B46C1;
+  --deep-purple: #553C9A;
+  --mystic-green: #10B981;
+  --castle-black: #1F2937;
+  --stone-gray: #374151;
+  --gold: #FCD34D;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+  --light-bg: #F9FAFB;
+  --text-light: #FFF;
+  --text-dark: #111;
+  --transition: .3s ease-in-out;
+  --danger-red: #EF4444;
+  --danger-red-hover: #DC2626;
+  --primary-blue: #3B82F6;
+  --primary-blue-hover: #2563EB;
+}
+
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Merriweather', serif;
+  background: linear-gradient(135deg, var(--castle-black), var(--deep-purple));
+  color: var(--text-light);
+  min-height: 100vh;
+  line-height: 1.5;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* === Container with Castle Flair === */
+.container {
+  max-width: 600px;
+  margin: 0.5rem auto;
+  padding: 0.75rem;
+  background: rgba(31,41,55,0.85);
+  border: 4px solid var(--gold);
+  border-radius: 1rem;
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.7),
+    inset 0 0 30px rgba(252,211,77,0.3);
+  /* Adjust for mobile - less padding, account for button bar */
+  min-height: calc(100vh - 1rem);
+  display: flex;
+  flex-direction: column;
+}
+
+/* During gameplay, make container more compact */
+.container.gameplay {
+  margin: 0.25rem auto;
+  padding: 0.5rem;
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+}
+
+/* === Header with Castle Icon === */
+header {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 4px solid var(--gold);
+  flex-shrink: 0;
+}
+.castle-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 0 8px rgba(252,211,77,0.8));
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  margin: .25rem 0;
+  color: var(--gold);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+header p {
+  font-family: 'MedievalSharp', cursive;
+  font-size: 0.9rem;
+  opacity: .9;
+}
+
+/* === Buttons === */
+.btn {
+  display: block;
+  width: 100%;
+  background: var(--royal-purple);
+  color: var(--text-light);
+  border: none;
+  padding: .75rem;
+  margin-top: .5rem;
+  border-radius: .5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.btn:hover {
+  background: var(--deep-purple);
+  transform: translateY(-2px);
+}
+.btn[disabled] {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* === Scorecard Button === */
+.scorecard-btn {
+  background: var(--mystic-green);
+  margin-bottom: .5rem;
+}
+.scorecard-btn:hover {
+  background: #0e9f6e;
+}
+
+/* === Course Selector === */
+.courses {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+.courses .btn {
+  flex: 1;
+  padding: .75rem;
+  font-size: .875rem;
+  text-transform: uppercase;
+  position: relative;
+  border: 2px solid transparent;
+  transition: all var(--transition);
+}
+
+/* Inactive course styling */
+.courses .btn:not(.active) {
+  background: rgba(55, 65, 81, 0.6);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: var(--stone-gray);
+}
+
+.courses .btn:not(.active):hover {
+  background: rgba(55, 65, 81, 0.8);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: var(--royal-purple);
+}
+
+/* Active course styling - much more prominent */
+.courses .btn.active {
+  background: linear-gradient(135deg, var(--royal-purple), var(--deep-purple));
+  color: var(--text-light);
+  border-color: var(--gold);
+  box-shadow: 
+    0 0 15px rgba(252, 211, 77, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  font-weight: 700;
+}
+
+/* Add a subtle glow animation for active course */
+.courses .btn.active::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--gold), var(--royal-purple), var(--gold));
+  border-radius: .6rem;
+  z-index: -1;
+  opacity: 0.3;
+  animation: courseGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes courseGlow {
+  from { opacity: 0.2; }
+  to { opacity: 0.4; }
+}
+
+/* === Course Display (when game is active) === */
+.course-display {
+  text-align: center;
+  padding: .75rem;
+  margin: 0 auto 1rem auto;
+  background: linear-gradient(135deg, var(--deep-purple), var(--royal-purple));
+  border: 2px solid var(--gold);
+  border-radius: .5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  box-shadow: 
+    0 2px 8px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  display: block;
+  width: fit-content;
+}
+
+/* === Player Setup === */
+.players {
+  margin-bottom: 1rem;
+}
+.player-input {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: .5rem;
+}
+.player-input input {
+  flex: 1;
+  padding: .5rem;
+  border: 2px solid var(--stone-gray);
+  border-radius: .5rem;
+  background: var(--light-bg);
+  color: var(--text-dark);
+}
+.player-input button {
+  background: var(--mystic-green);
+  border: none;
+  padding: 0 .75rem;
+  border-radius: .5rem;
+  color: var(--text-light);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.player-input button:hover {
+  background: #0e9f6e;
+}
+
+/* === Hole Play & Progress === */
+.hole-play { 
+  display: none; 
+  flex: 1;
+  overflow-y: auto;
+}
+.hole-play.active { display: flex; flex-direction: column; }
+
+.hole-header { 
+  text-align: center; 
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+.hole-header h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  margin-bottom: .25rem;
+}
+.hole-story {
+  font-family: 'Cinzel', serif;
+  background: rgba(0,0,0,0.75);
+  padding: 0.6rem;
+  border-radius: .5rem;
+  font-size: 1.15rem;
+  margin-bottom: .5rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  line-height: 1.4;
+}
+.hole-progress {
+  font-size: 0.9rem;
+  margin-bottom: .5rem;
+  color: var(--mystic-green);
+}
+.progress-bar {
+  width: 100%; 
+  height: .5rem;
+  background: var(--stone-gray);
+  border-radius: .25rem;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--mystic-green);
+  width: 0;
+  transition: width var(--transition);
+}
+
+/* === Player Grid & Cards === */
+.players-grid {
+  display: grid;
+  gap: .5rem;
+  margin-bottom: 0.75rem;
+  flex: 1;
+  align-content: start;
+}
+/* mobile: one column; tablet+ two columns */
+@media (min-width: 400px) {
+  .players-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.player-card {
+  background: rgba(16,24,32,0.85);
+  border: 2px solid var(--stone-gray);
+  border-radius: .5rem;
+  padding: 0.5rem;
+}
+.player-card label {
+  display: block;
+  margin-bottom: .25rem;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.player-card select {
+  width: 100%;
+  padding: .4rem;
+  border: 2px solid var(--stone-gray);
+  border-radius: .5rem;
+  background: var(--light-bg);
+  color: var(--text-dark);
+  font-size: 0.9rem;
+  font-family: 'Merriweather', serif;
+}
+
+/* === Enhanced Scoring Elements === */
+/* Score description styling for achievements */
+.score-description {
+  margin-top: .25rem;
+  font-size: .7rem;
+  font-weight: bold;
+  text-align: center;
+  padding: .25rem;
+  border-radius: .25rem;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--mystic-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Special styling for exceptional scores */
+.score-description.hole-in-one {
+  background: rgba(252, 211, 77, 0.2);
+  color: var(--gold);
+  border-color: var(--gold);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.score-description.eagle {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--mystic-green);
+  border-color: var(--mystic-green);
+}
+
+.score-description.birdie {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--mystic-green);
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px rgba(252, 211, 77, 0.5); }
+  to { box-shadow: 0 0 15px rgba(252, 211, 77, 0.8); }
+}
+
+/* Enhanced player total with par information */
+.player-total {
+  margin-top: .25rem;
+  text-align: right;
+  font-size: .8rem;
+  color: var(--mystic-green);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.player-total .par-info {
+  font-size: .7rem;
+  opacity: 0.8;
+}
+
+/* === ENHANCED MOBILE-FIRST BUTTON BAR === */
+.mobile-button-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(31, 41, 55, 0.98);
+  backdrop-filter: blur(10px);
+  border-top: 2px solid var(--gold);
+  padding: 0.5rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0));
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  display: none;
+}
+
+.mobile-button-bar.active {
+  display: block;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.mobile-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.25rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  min-height: 2.5rem;
+  font-family: 'Merriweather', serif;
+}
+
+/* Button hover effect */
+.mobile-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.mobile-btn:hover::before {
+  left: 100%;
+}
+
+.mobile-btn:active {
+  transform: scale(0.98);
+}
+
+/* Primary action buttons */
+.mobile-btn.primary {
+  background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-hover));
+  color: var(--text-light);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.mobile-btn.primary:hover {
+  background: linear-gradient(135deg, var(--primary-blue-hover), #1D4ED8);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Secondary action buttons */
+.mobile-btn.secondary {
+  background: linear-gradient(135deg, var(--mystic-green), #0e9f6e);
+  color: var(--text-light);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.mobile-btn.secondary:hover {
+  background: linear-gradient(135deg, #0e9f6e, #047857);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Navigation buttons */
+.mobile-btn.nav {
+  background: linear-gradient(135deg, var(--royal-purple), var(--deep-purple));
+  color: var(--text-light);
+  border: 1px solid rgba(107, 70, 193, 0.3);
+}
+
+.mobile-btn.nav:hover {
+  background: linear-gradient(135deg, var(--deep-purple), #4C1D95);
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.3);
+}
+
+/* Danger/Quit button */
+.mobile-btn.danger {
+  background: linear-gradient(135deg, var(--danger-red), var(--danger-red-hover));
+  color: var(--text-light);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.mobile-btn.danger:hover {
+  background: linear-gradient(135deg, var(--danger-red-hover), #B91C1C);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Disabled state */
+.mobile-btn:disabled {
+  background: linear-gradient(135deg, var(--stone-gray), #4B5563);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+  box-shadow: none;
+  border: 1px solid rgba(75, 85, 99, 0.3);
+}
+
+.mobile-btn:disabled::before {
+  display: none;
+}
+
+.mobile-btn:disabled:active {
+  transform: none;
+}
+
+/* Button icons */
+.mobile-btn .icon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Button text */
+.mobile-btn span:not(.icon) {
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+/* Hide original buttons when mobile bar is active */
+.hole-play.active .scorecard-btn,
+.hole-play.active #prevBtn,
+.hole-play.active #nextBtn {
+  display: none;
+}
+
+/* === Leaderboard & Scorecards === */
+.leaderboard {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+@media (min-width: 400px) {
+  .leaderboard {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+.leaderboard-card {
+  background: #fef8e7; /* parchment tone */
+  border: 2px dashed var(--stone-gray);
+  border-radius: .5rem;
+  padding: 1rem;
+  position: relative;
+  font-family: 'Merriweather', serif;
+  color: var(--castle-black);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+}
+.leaderboard-card .trophy {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  font-size: 1.5rem;
+}
+.leaderboard-card h3 {
+  margin-bottom: .5rem;
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  color: var(--deep-purple);
+  text-align: center;
+}
+
+/* Enhanced scorecard table with par information */
+.scorecard {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: .5rem;
+}
+.scorecard th,
+.scorecard td {
+  border: 1px solid var(--stone-gray);
+  padding: .25rem .5rem;
+  text-align: center;
+  font-size: .875rem;
+}
+.scorecard th {
+  background: var(--stone-gray);
+  color: var(--text-light);
+}
+
+/* Par column styling */
+.scorecard th:nth-child(2),
+.scorecard td:nth-child(2) {
+  color: var(--gold);
+  font-weight: bold;
+  font-size: .75rem;
+}
+
+/* Score differential column (+/-) */
+.scorecard th:nth-child(4),
+.scorecard td:nth-child(4) {
+  font-weight: bold;
+  color: var(--mystic-green);
+}
+
+.total-row td {
+  border-top: 2px solid var(--deep-purple);
+  font-weight: bold;
+}
+
+/* Achievements section */
+.achievements {
+  margin-top: .75rem;
+  padding: .5rem;
+  background: rgba(107, 70, 193, 0.1);
+  border-radius: .375rem;
+  border: 1px solid rgba(107, 70, 193, 0.2);
+  font-size: .75rem;
+  text-align: center;
+  color: var(--royal-purple);
+}
+
+.achievements strong {
+  color: var(--gold);
+}
+
+/* === Summary === */
+.summary { display: none; }
+.summary.active { display: block; }
+
+/* Enhanced winner announcement */
+.winner {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  margin-bottom: 1rem;
+}
+
+#winnerAnnouncement {
+  background: linear-gradient(135deg, var(--royal-purple), var(--deep-purple));
+  padding: 1.25rem;
+  border-radius: .75rem;
+  border: 3px solid var(--gold);
+  box-shadow: 
+    0 0 20px rgba(252, 211, 77, 0.3),
+    inset 0 0 15px rgba(252, 211, 77, 0.1);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
+/* === Scorecard Modal === */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition), visibility var(--transition);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--castle-black);
+  border: 4px solid var(--gold);
+  border-radius: 1rem;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 
+    0 0 30px rgba(0,0,0,0.9),
+    inset 0 0 20px rgba(252,211,77,0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 2px solid var(--gold);
+  background: linear-gradient(135deg, var(--deep-purple), var(--royal-purple));
+}
+
+.modal-header h2 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  margin: 0;
+  font-size: 1.5rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition);
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-scorecards {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .modal-scorecards {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+.modal-scorecard {
+  background: #fef8e7;
+  border: 2px solid var(--stone-gray);
+  border-radius: .75rem;
+  padding: 1rem;
+  color: var(--castle-black);
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+}
+
+.modal-scorecard h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--deep-purple);
+  margin-bottom: .75rem;
+  text-align: center;
+  font-size: 1.125rem;
+}
+
+.modal-scorecard .scorecard {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+
+.modal-scorecard .scorecard th,
+.modal-scorecard .scorecard td {
+  border: 1px solid var(--stone-gray);
+  padding: .25rem .5rem;
+  text-align: center;
+}
+
+.current-hole-row {
+  background: rgba(16, 185, 129, 0.1);
+  font-weight: bold;
+}
+
+.current-hole-row td {
+  color: var(--mystic-green);
+}
+
+.modal-scorecard .total-row td {
+  border-top: 2px solid var(--deep-purple);
+  font-weight: bold;
+  background: rgba(107, 70, 193, 0.1);
+}
+
+/* === Responsive Enhancements === */
+/* Mobile optimizations for enhanced scoring */
+@media (max-width: 480px) {
+  .scorecard {
+    font-size: .7rem;
+  }
+  
+  .scorecard th,
+  .scorecard td {
+    padding: .1rem .25rem;
+  }
+  
+  .score-description {
+    font-size: .65rem;
+    padding: .2rem;
+  }
+  
+  .player-total {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .125rem;
+  }
+  
+  #winnerAnnouncement {
+    padding: 0.75rem;
+    font-size: .85rem;
+  }
+
+  .mobile-btn span:not(.icon) {
+    font-size: 0.65rem;
+  }
+  
+  .mobile-btn .icon {
+    font-size: 1rem;
+  }
+  
+  .hole-story {
+    font-size: 1.05rem;
+    padding: 0.5rem;
+    line-height: 1.35;
+  }
+  
+  .hole-header h2 {
+    font-size: 1rem;
+  }
+  
+  .player-card {
+    padding: 0.4rem;
+  }
+}
+
+/* Add quit button accessibility */
+.quit-hint {
+  position: fixed;
+  bottom: 4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  z-index: 101;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.quit-hint.show {
+  opacity: 1;
+}
+
+/* Utility */
+.hidden { display: none !important; }
