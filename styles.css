@@ -309,15 +309,17 @@ header p {
   100% { transform: scale(1); }
 }
 
-/* Courses container switches to block when showing course display */
+/* Courses container switches to flex-center when showing course display */
 .courses:has(.course-display) {
-  display: block;
+  display: flex;
+  justify-content: center;
   margin-bottom: var(--space-2);
 }
 
 /* Course display during game - Slim full-width banner */
 .course-display {
   width: 100%;
+  max-width: 100%;
   text-align: center;
   padding: var(--space-1) var(--space-3);
   background: linear-gradient(90deg, var(--primary-600), var(--primary-500), var(--primary-600));
@@ -326,7 +328,6 @@ header p {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 auto var(--space-2);
   box-shadow: var(--shadow-sm);
   letter-spacing: 0.05em;
   text-transform: uppercase;
