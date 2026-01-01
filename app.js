@@ -453,10 +453,11 @@ function updateMobileButtons() {
   const isLastHole = currentHole === HOLES_COUNT - 1;
   const allScoresEntered = players.every(p => p.scores[currentHole] !== null);
 
+  // Back button always navigates back - to previous hole or to setup on hole 1
   grid.innerHTML = `
-    <button class="mobile-btn ${isFirstHole ? 'danger' : 'nav'}" onclick="${isFirstHole ? 'confirmQuit()' : 'previousHole()'}">
-      <span class="icon">${isFirstHole ? '🚪' : '←'}</span>
-      <span>${isFirstHole ? 'Quit' : 'Previous'}</span>
+    <button class="mobile-btn nav" onclick="${isFirstHole ? 'goBackToSetup()' : 'previousHole()'}">
+      <span class="icon">←</span>
+      <span>${isFirstHole ? 'Back' : 'Previous'}</span>
     </button>
     <button class="mobile-btn secondary" onclick="showScorecards()">
       <span class="icon">📊</span>
@@ -467,6 +468,31 @@ function updateMobileButtons() {
       <span>${isLastHole ? 'Finish' : 'Next'}</span>
     </button>
   `;
+}
+
+// Go back to setup screen (preserves game state so user can resume)
+function goBackToSetup() {
+  gameStarted = false;
+
+  document.querySelector('.container').classList.remove('gameplay');
+  document.getElementById('mobileButtonBar').classList.remove('active');
+  document.getElementById('holePlay').classList.remove('active');
+
+  // Show setup with current players
+  showCourseSelection();
+  document.getElementById('playerSetup').classList.remove('hidden');
+
+  // Restore player names in inputs
+  const inputsContainer = document.getElementById('playerInputs');
+  inputsContainer.innerHTML = players.map((p, i) => `
+    <div class="player-input">
+      <input type="text" placeholder="Player ${i + 1} name" aria-label="Name of Player ${i + 1}"
+             maxlength="20" autocomplete="off" autocapitalize="words" value="${escapeHtml(p.name)}">
+      <button type="button" onclick="removePlayer(this)" aria-label="Remove player">×</button>
+    </div>
+  `).join('');
+
+  localStorage.removeItem(STORAGE_KEY);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
