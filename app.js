@@ -935,12 +935,10 @@ window.addEventListener('popstate', (e) => {
       // On first hole, go back to setup
       goBackToSetup();
     } else {
-      // Go to previous hole
+      // Go to previous hole - don't push new state, let browser history work naturally
       currentHole--;
       renderHole();
       saveState();
-      // Push new state so back button continues to work
-      history.pushState({ hole: currentHole }, '', `#hole${currentHole + 1}`);
     }
   }
 });
